@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML Color Names</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 5px; background: #f1f1f1; font-family: "Segoe UI", Arial, sans-serif; }
+    #colornamestable { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; }
+    .colorbox { padding: 5px; }
+    .innerbox {
+      min-height: 118px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-weight: 700;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      overflow: hidden;
+    }
+    .colorhexspan { font-size: 14px; opacity: 0.6; line-height: 1.1; }
+    .colornamespan {
+      font-size: 18px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      display: inline-block;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    #colornamestable a { text-decoration: none; color: inherit; opacity: 0.8; }
+    #colornamestable a:hover { opacity: 1; }
+
+    @media (max-width: 1800px) { .colorhexspan { font-size: 13px; } .colornamespan { font-size: 17px; } }
+    @media (max-width: 1500px) { #colornamestable { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+    @media (max-width: 1300px) { #colornamestable { grid-template-columns: repeat(4, minmax(0, 1fr)); } .colornamespan { font-size: 18px; } }
+    @media (max-width: 992px)  { #colornamestable { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 700px)  { #colornamestable { grid-template-columns: repeat(2, minmax(0, 1fr)); } .colornamespan { font-size: 16px; } }
+  </style>
+</head>
+<body>
+  <div id="colornamestable"></div>
+  <script>
+    const names = ["AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","RebeccaPurple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
+
+    function parseRgb(s){ const m=s.match(/\d+/g); return m&&m.length>=3?[+m[0],+m[1],+m[2]]:[0,0,0]; }
+    function toHex(v){ return v.toString(16).padStart(2,"0").toUpperCase(); }
+    function rgbToHex(r,g,b){ return `#${toHex(r)}${toHex(g)}${toHex(b)}`; }
+    function isDark(r,g,b){ return (0.299*r+0.587*g+0.114*b) < 150; }
+
+    const wrap = document.getElementById("colornamestable");
+    names.forEach((name) => {
+      const probe = document.createElement("span");
+      probe.style.color = name;
+      document.body.appendChild(probe);
+      const [r,g,b] = parseRgb(getComputedStyle(probe).color);
+      probe.remove();
+      const hex = rgbToHex(r,g,b);
+      const txt = isDark(r,g,b) ? "#ffffff" : "#1f2d3d";
+
+      const card = document.createElement("div");
+      card.className = "colorbox";
+      card.innerHTML = `<div class="innerbox" style="background-color:${hex};color:${txt}"><div><span class="colornamespan"><a target="_blank" href="https://www.w3schools.com/colors/color_tryit.asp?color=${encodeURIComponent(name)}">${name}</a></span></div><span class="colorhexspan"><a target="_blank" href="https://www.w3schools.com/colors/color_tryit.asp?hex=${hex.slice(1)}">${hex}</a></span></div>`;
+      wrap.appendChild(card);
+    });
+  </script>
+</body>
+</html>
