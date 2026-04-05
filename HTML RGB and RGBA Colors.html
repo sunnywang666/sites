@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGBA Color Debugger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --font: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+      --bg: #f2f2f0;
+      --surface: #ffffff;
+      --ink: #1a1a1a;
+      --muted: #737373;
+      --hairline: #e0e0de;
+      --checker: #ecece8;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: clamp(20px, 5vw, 48px);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mixer {
+      width: min(720px, 100%);
+      font-family: var(--font);
+      background: var(--surface);
+      padding: clamp(28px, 5vw, 48px) clamp(24px, 4vw, 40px);
+      border: 1px solid var(--hairline);
+    }
+
+    .mixer__title {
+      margin: 0 0 clamp(1rem, 2.5vw, 1.5rem);
+      font-size: clamp(1.0625rem, 2.2vw, 1.375rem);
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-align: center;
+    }
+
+    /* Preview: checkerboard shows through alpha — minimal + purposeful */
+    #rgbaresult {
+      position: relative;
+      min-height: clamp(140px, 32vw, 200px);
+      margin-bottom: clamp(28px, 5vw, 40px);
+      border: 1px solid var(--hairline);
+      overflow: hidden;
+    }
+
+    #rgbaresult::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-color: var(--surface);
+      background-image: repeating-conic-gradient(var(--checker) 0% 25%, var(--surface) 0% 50%);
+      background-size: 14px 14px;
+    }
+
+    #rgbaswatch {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      transition: background-color 0.12s ease;
+    }
+
+    #rgbaresulttext {
+      position: relative;
+      z-index: 2;
+      margin: 0;
+      height: 100%;
+      min-height: inherit;
+      display: grid;
+      place-items: center;
+      padding: 1rem 1.25rem;
+      text-align: center;
+      font-size: clamp(1rem, 2.8vw, 1.5rem);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sliders {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(1.25rem, 3vw, 2rem);
+      padding-top: clamp(1.25rem, 3vw, 1.75rem);
+      border-top: 1px solid var(--hairline);
+      align-items: end;
+    }
+
+    .slider-col {
+      text-align: center;
+    }
+
+    .slider-col label {
+      display: block;
+      margin-bottom: 0.65rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .slider-col input[type="range"] {
+      width: 100%;
+      height: 4px;
+      accent-color: var(--ink);
+    }
+
+    .slider-col .value {
+      margin-top: 0.5rem;
+      font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    @media (max-width: 640px) {
+      .sliders {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 380px) {
+      .sliders {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mixer">
+    <h1 style="text-align:center;" class="mixer__title" >RGBA Color Debugger</h1>
+    <div id="rgbaresult">
+      <div id="rgbaswatch" aria-hidden="true"></div>
+      <p id="rgbaresulttext">RGBA(0, 0, 0, 0)</p>
+    </div>
+    <div class="sliders">
+      <div class="slider-col"><label for="slideRedA">RED</label><input type="range" id="slideRedA" value="0" min="0" max="255"><div id="valRedA" class="value">0</div></div>
+      <div class="slider-col"><label for="slideGreenA">GREEN</label><input type="range" id="slideGreenA" value="0" min="0" max="255"><div id="valGreenA" class="value">0</div></div>
+      <div class="slider-col"><label for="slideBlueA">BLUE</label><input type="range" id="slideBlueA" value="0" min="0" max="255"><div id="valBlueA" class="value">0</div></div>
+      <div class="slider-col"><label for="slideAlphaA">ALPHA</label><input type="range" id="slideAlphaA" value="0" min="0" max="10"><div id="valAlphaA" class="value">0</div></div>
+    </div>
+  </div>
+  <script>
+    const sliders = ["Red", "Green", "Blue", "Alpha"].map((n) => document.getElementById("slide" + n + "A"));
+    const values = ["Red", "Green", "Blue", "Alpha"].map((n) => document.getElementById("val" + n + "A"));
+    const swatch = document.getElementById("rgbaswatch");
+    const resultText = document.getElementById("rgbaresulttext");
+
+    function relLuminance(r, g, b) {
+      const srgb = [r, g, b].map((v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+    }
+
+    function changeRGBA() {
+      const r = Number(sliders[0].value);
+      const g = Number(sliders[1].value);
+      const b = Number(sliders[2].value);
+      const aRaw = Number(sliders[3].value);
+      const a = aRaw / 10;
+      const cssColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+      const displayColor = `RGBA(${r}, ${g}, ${b}, ${a})`;
+      values[0].textContent = r;
+      values[1].textContent = g;
+      values[2].textContent = b;
+      values[3].textContent = aRaw;
+      swatch.style.backgroundColor = cssColor;
+      resultText.textContent = displayColor;
+      const L = relLuminance(r, g, b);
+      const onTop = a * L + (1 - a) * 0.92;
+      resultText.style.color = onTop > 0.45 ? "#1a1a1a" : "#fafafa";
+    }
+
+    sliders.forEach((slider) => {
+      slider.addEventListener("input", changeRGBA);
+      slider.addEventListener("change", changeRGBA);
+    });
+    changeRGBA();
+  </script>
+</body>
+</html>
